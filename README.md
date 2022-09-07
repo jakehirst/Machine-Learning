@@ -1,0 +1,1 @@
+This is a machine learning library developed by Jake Hirst for CS5350/6350 in University of Utah
