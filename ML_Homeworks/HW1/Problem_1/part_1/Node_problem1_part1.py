@@ -5,10 +5,11 @@ class Node():
     
     #if it is a leaf node, leaf is true and value is the value of the leaf node
     #the depth is the depth of the node 
-    def __init__(self, branch=None, info=None, depth=0, leaf=False, label=None):
+    def __init__(self, info=None, depth=0, leaf=False, attributeVal=None, label=None):
         self.info = info
         self.depth = depth
         self.leaf = leaf
         self.label = label
+        self.attributeVal = attributeVal
         
         

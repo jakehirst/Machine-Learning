@@ -58,7 +58,7 @@ finds the attribute that has the best information gain out of the subset of data
 Subset = subset of the current node wishing to split
 Attributes_Left = Attributes that the current node has not split on so far.
 '''
-def AttributeWithHighestInfoGain(Subset, Attributes_Left):
+def AttributeWithHighestInfoGain_Entropy(Subset, Attributes_Left):
     if(len(Attributes_Left) == 1):
         return Attributes_Left[0]
     
@@ -85,6 +85,11 @@ def AttributeWithHighestInfoGain(Subset, Attributes_Left):
     return BestInfoGain[0]  #returns the attribute with the best information gain, not the information gain.
      
      
+     
+def AttributeWithHighestInfoGain_MajorityError(Subset, Attributes_Left):
+    
+    return print("done")
+
 '''
 checks to see if all of the labels (outputs) of the subset are the same.
 
@@ -131,6 +136,86 @@ def SplitData(DataFrame, AttributeToSplit, val):
     newDF = DataFrame.loc[DataFrame[AttributeToSplit] == val ]
     del newDF[AttributeToSplit]
     return newDF
+
+'''
+checks the decision tree made against the tester data set.
+'''
+def CheckTreeAgainstTestData(TestFileName, rootNode, columnTitles):
+    Testdf = pd.read_csv(TestFileName)
+    print(Testdf)
+    TestArray = Testdf.to_numpy()
+    labelCol = len(columnTitles) -1
+
+    correct = 0
+    incorrect = 0
+    rownum = 0
+    for row in TestArray:
+        rownum +=1
+        labelFromtree = GuessLabel_4_Row(rootNode, row, columnTitles)
+        labelFromRow = row[labelCol]
+        if(labelFromtree == labelFromRow):
+            correct += 1
+        else:
+            incorrect += 1
+        
+        print("Row number = " + str(rownum))
+        print("Correct = " + str(correct))
+        print("Incorrect = " + str(incorrect))
+        print("Ratio = " + str(correct / (correct + incorrect)))
+        
+
+            
+    
+    
+    print("\nresults are in")
+    print("Row number = " + str(rownum))
+    print("Correct = " + str(correct))
+    print("Incorrect = " + str(incorrect))
+    print("Percent Correct = " + str((correct / (correct + incorrect)) * 100.0))
+
+'''
+helper function for CheckTreeAgainstTestData()
+checks to see if the row in the test data outputs the correct label 
+'''
+def GuessLabel_4_Row(rootNode, row, columnTitles):
+    Isleaf = False
+    node = rootNode
+    label = None
+    #until you find the leaf node...
+    while(Isleaf == False):
+        #get the attribute that the current node has split on
+        attribute = list(node.info.keys())[0]
+        print("*** "+ attribute + " ***")
+        col = np.where(columnTitles == attribute)[0][0] #column index of the attribute
+        value = row[col]
+        print("value should be: " + str(value))
+        #go to the next node until you find a leaf
+        for i in range(len(node.info[attribute])):
+            #going through each of the child nodes of the current node
+            childNode = node.info[attribute][i]
+            print(str(childNode.attributeVal))
+            #if the newNode is a leaf and has the correct attributeVal, return the label 
+            if(childNode.attributeVal == value and childNode.leaf == True):
+                print("FOUND A LEAF")
+                return childNode.label
+                break
+            #if the newNode 
+            elif(childNode.attributeVal == value):
+                print("found the right value")
+                node = childNode
+                break
+            #if there is no node that has the attribute value that you are looking for, just return
+            #the leaf node that has the most common label of the parent node.
+            elif(i == len(node.info[attribute]) - 1):
+                return node.info[attribute][0].label
+        print(columnTitles)
+        print(row)
+    
+    
+    
+    
+    
+    
     
 
     
