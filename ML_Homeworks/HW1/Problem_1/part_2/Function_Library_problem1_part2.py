@@ -142,24 +142,6 @@ def AttributeWithHighestInfoGain_MajorityError(Subset, Attributes_Left):
      
      
      
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
-     
 '''
 finds the majority error of an attribute in the subset.
 '''
@@ -173,7 +155,7 @@ def FindGiniIndex(Subset, attribute_index):
         Sv = []
         label_array = None
         labels_and_counts = None
-        GI_Sv = 0.0
+        GI_Sv = 1.0
         for row in Subset:
             if (row[attribute_index] == value):
                 Sv.append(list(row))
@@ -181,7 +163,7 @@ def FindGiniIndex(Subset, attribute_index):
         label_array = Sv[:, labelIdx]
         labels_and_counts = np.unique(label_array, return_counts=True)
         for count in labels_and_counts[1]:
-            GI_Sv += (count/sum(labels_and_counts[1]))**2
+            GI_Sv += -(count/sum(labels_and_counts[1]))**2
         total_GI_Sv += ((len(Sv)/length_subset) * GI_Sv)
         
     return total_GI_Sv
@@ -196,7 +178,9 @@ def AttributeWithHighestInfoGain_GiniIndex(Subset, Attributes_Left):
     labelIdx = len(Subset[0]) - 1
     label_array = Subset[:, labelIdx]
     labels_and_counts = np.unique(label_array, return_counts=True)
-    MajErr_S = (min(labels_and_counts[1])/sum(labels_and_counts[1]))
+    GI_S = 1.0
+    for i in range(len(labels_and_counts[1])):
+        GI_S += -((labels_and_counts[1][i] / sum(labels_and_counts[1]))**2)
     
     BestInfoGain = []
     Attribute_possible_values = set()
@@ -206,7 +190,7 @@ def AttributeWithHighestInfoGain_GiniIndex(Subset, Attributes_Left):
         attribute_index = Attributes_Left.index(Attribute)
         GI_Sv = FindGiniIndex(Subset, attribute_index)
         
-        temp_Gain = MajErr_S - GI_Sv
+        temp_Gain = GI_S - GI_Sv
         if(len(BestInfoGain) == 0):
             BestInfoGain.append(Attribute)
             BestInfoGain.append(temp_Gain)

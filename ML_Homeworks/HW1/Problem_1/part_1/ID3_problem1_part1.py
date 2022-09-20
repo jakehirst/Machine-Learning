@@ -80,7 +80,7 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None):
                 
                 
 #problem1 binary dataset
-filename = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/Problem_1/part_1/problem1_data_allthesamelabel.csv"
+filename = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/Problem_1/part_1/problem1_data.csv"
 
 DATA = Read_Data(filename)
 rootNode = ID3(DATA)
@@ -88,7 +88,7 @@ print("max depth of tree = " + str(max(DEPTHS)))
 print("done!")
 
 #problem1 binary dataset
-TestFileName = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/Problem_1/part_1/problem1_data_allthesamelabel.csv"
+TestFileName = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/Problem_1/part_1/problem1_data.csv"
 
 columnTitles = DATA.columns.values 
 CheckTreeAgainstTestData(TestFileName, rootNode, columnTitles)

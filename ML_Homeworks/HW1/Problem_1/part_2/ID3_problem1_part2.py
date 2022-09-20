@@ -53,6 +53,7 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None):
 
         PossibleValsOfAttributeToSplit = GetValuesPossibleOfAttribute(DataFrame, AttributeToSplit)
         
+        #go thru each possible value of the attribute youre splitting on
         for val in PossibleValsOfAttributeToSplit:
             new_df = DataFrame
             new_df = SplitData(DataFrame, AttributeToSplit, val)
