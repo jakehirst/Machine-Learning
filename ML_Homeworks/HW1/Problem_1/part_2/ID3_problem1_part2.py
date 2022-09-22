@@ -41,7 +41,7 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None):
     else:
         depth+=1
         #find the best attribute to split on
-        AttributeToSplit = AttributeWithHighestInfoGain_MajorityError(data,Attributes)
+        AttributeToSplit = AttributeWithHighestInfoGain_GiniIndex(data,Attributes)
         print(AttributeToSplit)
         info = {AttributeToSplit:[]}
         if(valOfNode == None):

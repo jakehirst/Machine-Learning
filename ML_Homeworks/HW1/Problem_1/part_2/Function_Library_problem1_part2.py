@@ -27,14 +27,14 @@ def Entropy(Subset, possible_outputs):
     i = 0
     p = []
     thingstosum = []
-    whole = len(Subset)
+    whole = sum(np.transpose(np.array(Subset))[len(Subset[0])-1])
     for output in possible_outputs:
         part = 0
         for row in Subset:
-            if(row[len(row) -1] == output): part += 1
+            if(row[len(row) -2] == output): part += row[len(row) - 1]
         p.append(part/whole)
-        if(p[i] == 0 or p[i] == 1):
-            return 0 #without this, log_2(0) or log_2(1) is NaN
+        if(p[i] == 0.0 or p[i] == 1.0):
+            return 0.0 #without this, log_2(0) or log_2(1) is NaN
         thingstosum.append(p[i]* log2(p[i]))
         i+=1
 
@@ -48,6 +48,8 @@ Attribute in this case is an integer from 0-3, referring to x_1 - x_3.
 '''
 def Information_gain(BigSubset, AttributeToTest_Index, AttributeToTest_possible_values, Possible_Outputs):
     thingstosum = []
+    #for each value in the Attribute's possible values, get all of the rows in the BigSubset that have that value 
+    #in the respective attribute into a smaller subset, and sum the entropies of the small subsets
     for value in AttributeToTest_possible_values:
         subset = []
         for row in BigSubset:
@@ -77,7 +79,7 @@ def AttributeWithHighestInfoGain_Entropy(Subset, Attributes_Left):
         attribute_index = Attributes_Left.index(Attribute)
         for row in range(1, len(Subset)):
             Attribute_possible_values.add(Subset[row][attribute_index])
-            Possible_Outputs.add(Subset[row][len(Subset[row]) - 1])
+            Possible_Outputs.add(Subset[row][len(Subset[row]) - 2])
             
         temp = Information_gain(Subset, attribute_index, Attribute_possible_values, Possible_Outputs)
         if(len(BestInfoGain) == 0):
@@ -169,7 +171,7 @@ def AttributeWithHighestInfoGain_MajorityError(Subset, Attributes_Left):
 finds the majority error of an attribute in the subset.
 '''
 def FindGiniIndex(Subset, attribute_index):
-    labelIdx = len(Subset[0]) - 1
+    labelIdx = len(Subset[0]) - 2
     AttributeValues = np.unique(Subset[:, attribute_index])
     length_subset = Subset.shape[0]
     
@@ -184,9 +186,15 @@ def FindGiniIndex(Subset, attribute_index):
                 Sv.append(list(row))
         Sv = np.array(Sv)
         label_array = Sv[:, labelIdx]
-        labels_and_counts = np.unique(label_array, return_counts=True)
-        for count in labels_and_counts[1]:
-            GI_Sv += -(count/sum(labels_and_counts[1]))**2
+        labels = np.unique(label_array)
+        whole = sum(np.transpose(np.array(Sv))[labelIdx+1].astype(float))
+        GI_Sv = 1.0
+        for label in labels:
+            num = 0.0
+            for row in Sv:
+                if(row[labelIdx] == label):
+                    num += float(row[labelIdx + 1])
+            GI_Sv += -((num/whole)**2)
         total_GI_Sv += ((len(Sv)/length_subset) * GI_Sv)
         
     return total_GI_Sv
@@ -198,12 +206,17 @@ def AttributeWithHighestInfoGain_GiniIndex(Subset, Attributes_Left):
     if(len(Attributes_Left) == 1):
         return Attributes_Left[0]
     
-    labelIdx = len(Subset[0]) - 1
+    labelIdx = len(Subset[0]) - 2
     label_array = Subset[:, labelIdx]
-    labels_and_counts = np.unique(label_array, return_counts=True)
+    labels = np.unique(label_array)
+    whole = sum(np.transpose(np.array(Subset))[labelIdx+1])
     GI_S = 1.0
-    for i in range(len(labels_and_counts[1])):
-        GI_S += -((labels_and_counts[1][i] / sum(labels_and_counts[1]))**2)
+    for label in labels:
+        num = 0.0
+        for row in Subset:
+            if(row[labelIdx] == label):
+                num += float(row[labelIdx + 1])
+        GI_S += -((num/whole)**2)
     
     BestInfoGain = []
     Attribute_possible_values = set()
