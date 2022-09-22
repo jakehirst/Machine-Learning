@@ -2,6 +2,7 @@ from inspect import Attribute
 from re import L
 from Node_problem1_part2 import Node
 from Function_Library_problem1_part2 import *
+from IPython.display import Image, display
 
 #contains the attributes of the set and their values
 ATTRIBUTES = {}
@@ -17,12 +18,12 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None):
     
     if(Attributes == None): Attributes = GetAttributesLeft(SubsetDict)#need to define the attributes for the first iteration
     
-    labelkey = list(SubsetDict)[-1]
+    labelkey = list(SubsetDict)[-2]
     labelvals = np.array(DataFrame[labelkey])
     data = DataFrame.values
     
     #if all of the labels are the same, return the common label.
-    LabelsAreEqual = All_Labels_Are_Da_Same(DataFrame)
+    LabelsAreEqual = All_Labels_Are_Da_Same(labelvals)
     if(LabelsAreEqual[0]):
         depth+=1
         leafnode = Node(depth=depth, leaf=True, label=LabelsAreEqual[1])
@@ -40,14 +41,16 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None):
     else:
         depth+=1
         #find the best attribute to split on
-        AttributeToSplit = AttributeWithHighestInfoGain_GiniIndex(data,Attributes)
+        AttributeToSplit = AttributeWithHighestInfoGain_MajorityError(data,Attributes)
         print(AttributeToSplit)
         info = {AttributeToSplit:[]}
+        if(valOfNode == None):
+            valOfNode = "Root"
         #attributeVal is the value of the attribute that we decided to split on in the last node
         rootNode = Node(info=info, depth=depth, attributeVal=valOfNode)
         
         #Always add a leaf node to each root node that contains the most common label of the rootNode's subset.
-        McL_subset = MostCommonLabel(labelvals)[0]
+        McL_subset = MostCommonLabel(DataFrame,labelvals)[0]
         mostCommonLabel_leafNode = Node(depth=depth+1, leaf=True, attributeVal="MCL", label=McL_subset)
         rootNode.info[AttributeToSplit].append(mostCommonLabel_leafNode)
 
@@ -59,7 +62,7 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None):
             new_df = SplitData(DataFrame, AttributeToSplit, val)
             #if the new subset is empty, add a leaf node with the most common label in the whole dataset as the leaf label.
             if(new_df.size == 0):
-                McL = MostCommonLabel(labelvals)[0]
+                McL = MostCommonLabel(DataFrame, labelvals)[0]
                 leafNode = Node(depth=depth+1, leaf=True, attributeVal=val, label=McL)
                 rootNode.info[AttributeToSplit].append(leafNode)
                 DEPTHS.append(depth)
@@ -86,18 +89,25 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None):
 #problem2 tennis dataset
 #filename = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/Problem_1/part_2/TennisDataset.csv"
 
-#car_Training
+#problem2 tennis dataset with missing attribute
+#filename = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/Problem_1/part_2/TennisDataset_with_missing_attribute.csv"
 filename = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/car/train.csv"
 
-DATA = Read_Data(filename)
+data = Read_Data(filename)
+DATA = FillMissingAttributes(data, 'Missing', 'c')
 rootNode = ID3(DATA)
 print("max depth of tree = " + str(max(DEPTHS)))
 print("done!")
+# graph = pydot.Dot(graph_type='graph')
+# visualize(rootNode,graph)
+
 
 #problem2 tennis dataset
 #TestFileName = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/Problem_1/part_2/TennisDataset.csv"
 
-#Car testing
+#problem2 tennis dataset with missing attribute
+#TestFileName = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/Problem_1/part_2/TennisDataset_with_missing_attribute.csv"
+
 TestFileName = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/car/test.csv"
 
 columnTitles = DATA.columns.values 

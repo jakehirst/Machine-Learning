@@ -5,6 +5,10 @@ from math import log2
 import numpy as np
 import pandas as pd
 from collections import Counter
+import pydot
+import networkx as nx
+import matplotlib.pyplot as plt
+
     
     
 '''
@@ -90,7 +94,7 @@ def AttributeWithHighestInfoGain_Entropy(Subset, Attributes_Left):
 finds the majority error of an attribute in the subset.
 '''
 def FindMajorityError(Subset, attribute_index):
-    labelIdx = len(Subset[0]) - 1
+    labelIdx = len(Subset[0]) - 2
     AttributeValues = np.unique(Subset[:, attribute_index])
     length_subset = Subset.shape[0]
     
@@ -105,8 +109,17 @@ def FindMajorityError(Subset, attribute_index):
                 Sv.append(list(row))
         Sv = np.array(Sv)
         label_array = Sv[:, labelIdx]
-        labels_and_counts = np.unique(label_array, return_counts=True)
-        MajErr_Sv = (min(labels_and_counts[1])/sum(labels_and_counts[1])) 
+        labels = np.unique(label_array)
+        
+        #getting the majority error of Sv
+        freq_of_labels = []
+        for label in labels:
+            num = 0.0
+            for row in Sv:
+                if(row[labelIdx] == label):
+                    num += float(row[labelIdx+1])
+            freq_of_labels.append(num)
+        MajErr_Sv = (min(freq_of_labels)/sum(freq_of_labels))
         total_ME_Sv += ((len(Sv)/length_subset) * MajErr_Sv)
         
     return total_ME_Sv
@@ -118,10 +131,20 @@ def AttributeWithHighestInfoGain_MajorityError(Subset, Attributes_Left):
     if(len(Attributes_Left) == 1):
         return Attributes_Left[0]
     
-    labelIdx = len(Subset[0]) - 1
+    labelIdx = len(Subset[0]) - 2
     label_array = Subset[:, labelIdx]
-    labels_and_counts = np.unique(label_array, return_counts=True)
-    MajErr_S = (min(labels_and_counts[1])/sum(labels_and_counts[1]))
+    The_labels = np.unique(label_array)
+
+    #getting the majority error of the whole subset
+    freq_of_labels = []
+    for label in The_labels:
+        num = 0.0
+        for row in Subset:
+            if(row[labelIdx] == label):
+                num += row[labelIdx+1]
+        freq_of_labels.append(num)
+                
+    MajErr_S = (min(freq_of_labels)/sum(freq_of_labels))
     
     BestInfoGain = []
     Attribute_possible_values = set()
@@ -218,18 +241,29 @@ gets the most common label in the subset, and returns it.
 
 Subset is the subset 
 '''
-def MostCommonLabel(labelvals):
-    values, counts = np.unique(labelvals, return_counts=True)
-    maxindex = counts.argmax()
-    value = values[maxindex]
-    count = counts[maxindex]
-    return value, count
+def MostCommonLabel(DataFrame, labelvals):
+    possiblelabelvals = np.unique(np.array(labelvals))
+    colNames = DataFrame.columns
+    labelIndex = len(DataFrame.columns) - 2
+    weightIndex = len(DataFrame.columns) - 1
+    
+    total_weights = []
+    for val in possiblelabelvals:
+        num = 0.0
+        for row in DataFrame.iterrows():
+            if(row[1][labelIndex] == val):
+                num += row[1][weightIndex]
+        total_weights.append(num)
+    mcl = possiblelabelvals[total_weights.index(max(total_weights))]
+    
+    return mcl, max(total_weights)
 
 '''
 returns a list of the attributes without the label key.
 '''
 def GetAttributesLeft(SubsetDict):
     ListOfAttributes = list(SubsetDict.keys())
+    ListOfAttributes.pop()
     ListOfAttributes.pop()
     return ListOfAttributes
 
@@ -254,7 +288,7 @@ def CheckTreeAgainstTestData(TestFileName, rootNode, columnTitles):
     Testdf = pd.read_csv(TestFileName)
     print(Testdf)
     TestArray = Testdf.to_numpy()
-    labelCol = len(columnTitles) -1
+    labelCol = len(columnTitles) -2
 
     correct = 0
     incorrect = 0
@@ -273,10 +307,6 @@ def CheckTreeAgainstTestData(TestFileName, rootNode, columnTitles):
         print("Incorrect = " + str(incorrect))
         print("Ratio = " + str(correct / (correct + incorrect)))
         
-
-            
-    
-    
     print("\nresults are in")
     print("Row number = " + str(rownum))
     print("Correct = " + str(correct))
@@ -320,6 +350,172 @@ def GuessLabel_4_Row(rootNode, row, columnTitles):
                 return node.info[attribute][0].label
         print(columnTitles)
         print(row)
+  
+    
+    
+'''
+populates all missing attributes values based on the parameter howToFill
+'''
+def FillMissingAttributes(data, missingIndicator, howToFill):
+    if(howToFill == 'a'):
+        return FillWithMCA(data, missingIndicator)
+    elif(howToFill == 'b'):
+        return FillWithMCA_SameLabel(data, missingIndicator)
+    elif(howToFill == 'c'):
+        return FillWithFractionalCounts(data, missingIndicator)
+    else:
+        print("need to input different howTofill parameter")
+
+
+'''
+rows in the training data with missing feature values are completed by using the most common
+value of the attribute among all examples
+'''
+def FillWithMCA(data, missingIndicator):
+    weights = np.ones(len(data))
+    #add ones to all the weights of the dataset
+    data['weights'] = weights
+    attributes = data.columns
+    rows_with_missing = []
+    #go through all of the rows of the dataset
+    for index, row in data.iterrows():
+        #go through each attribute in the row
+        for attIDX in range(len(attributes)-2):
+            #if there is a missing attribute value, drop it from the dataset and add it to the rows
+            #with missing attribute values to be added in later with the correct attribute value
+            if(row[attributes[attIDX]] == missingIndicator):
+                rows_with_missing.append((row,attIDX))
+                data = data.drop(index)
+    data.reset_index()
+    
+    #getting all the new rows and their weights to be added back into the dataset
+    newrows = []
+    for row in rows_with_missing:
+        columnarray = np.array(data._get_column_array(row[1]))
+        vals_and_freq = np.unique(columnarray, return_counts=True)
+        colval = attributes[row[1]]
+        idx = np.where(vals_and_freq[1] == max(vals_and_freq[1]))[0][0]
+        newrow = dict(row[0])
+        newrow[colval] = vals_and_freq[0][idx]
+        newrows.append(newrow)
+    #add all of the new rows with the weights back to the dataset
+    for row in newrows:
+        data.loc[len(data.index)] = pd.Series(row)
+    return data
+        
+
+'''
+rows in the training data with missing feature values are completed by using the most common
+value of the attribute among all examples with the same label
+'''
+def FillWithMCA_SameLabel(data, missingIndicator):
+    weights = np.ones(len(data))
+    #add ones to all the weights of the dataset
+    data['weights'] = weights
+    attributes = data.columns
+    rows_with_missing = []
+    #go through all of the rows of the dataset
+    for index, row in data.iterrows():
+        #go through each attribute in the row
+        for attIDX in range(len(attributes)-2):
+            #if there is a missing attribute value, drop it from the dataset and add it to the rows
+            #with missing attribute values to be added in later with the correct attribute value
+            if(row[attributes[attIDX]] == missingIndicator):
+                rows_with_missing.append((row,attIDX))
+                data = data.drop(index)
+    data.reset_index()
+    
+    #getting all the new rows and their weights to be added back into the dataset
+    newrows = []
+    for row in rows_with_missing:
+        data_same_label = data.loc[data[attributes[len(attributes)-2]] == row[0][attributes[len(attributes)-2]]]
+        columnarray = np.array(data_same_label._get_column_array(row[1]))
+        vals_and_freq = np.unique(columnarray, return_counts=True)
+        colval = attributes[row[1]]
+        idx = np.where(vals_and_freq[1] == max(vals_and_freq[1]))[0][0]
+        newrow = dict(row[0])
+        newrow[colval] = vals_and_freq[0][idx]
+        newrows.append(newrow)
+
+    #add all of the new rows with the weights back to the dataset
+    for row in newrows:
+        data.loc[len(data.index)] = pd.Series(row)
+    return data
+    
+'''
+rows in the training data with missing feature values are completed by adding fractoinal counts
+of the attribute values in the training data
+'''
+def FillWithFractionalCounts(data, missingIndicator):
+    weights = np.ones(len(data))
+    #add ones to all the weights of the dataset
+    data['weights'] = weights
+    attributes = data.columns
+    rows_with_missing = []
+    #go through all of the rows of the dataset
+    for index, row in data.iterrows():
+        #go through each attribute in the row
+        for attIDX in range(len(attributes)-2):
+            #if there is a missing attribute value, drop it from the dataset and add it to the rows
+            #with missing attribute values to be added in later with the correct attribute value
+            if(row[attributes[attIDX]] == missingIndicator):
+                rows_with_missing.append((row,attIDX))
+                data = data.drop(index)
+    data.reset_index()
+    
+    #getting all the new rows and their weights to be added back into the dataset
+    newrows = []
+    for row in rows_with_missing:
+        columnarray = np.array(data._get_column_array(row[1]))
+        vals_and_freq = np.unique(columnarray, return_counts=True)
+        colval = attributes[row[1]]
+        for i in range(len(vals_and_freq[0])):
+            attval = vals_and_freq[0][i]
+            newrow = dict(row[0])
+            newrow[colval] = attval
+            newrow['weights'] = vals_and_freq[1][i]/sum(vals_and_freq[1])
+            newrows.append(newrow)
+
+    #add all of the new rows with the weights back to the dataset
+    for row in newrows:
+        data.loc[len(data.index)] = pd.Series(row)
+    return data
+    
+
+
+
+
+
+
+
+
+
+
+
+
+def visualize(rootNode,graph):
+    root = pydot.Node("val = " + rootNode.attributeVal + '\n splitting on: ' + list(rootNode.info.keys())[0], 
+                      label="val = " + rootNode.attributeVal + "\n splitting on: " + list(rootNode.info.keys())[0])
+    graph.add_node(root)
+    for childNode in list(rootNode.info.values())[0]:
+        if(childNode.leaf):
+            child = pydot.Node("val = " + childNode.attributeVal + "\n LEAF = " + childNode.label,
+                               label="val = " + childNode.attributeVal + "\n LEAF = " + childNode.label)
+            graph.add_node(child)
+            edge = pydot.Edge("val = " + rootNode.attributeVal + "\n splitting on: " + list(rootNode.info.keys())[0],
+                              "val = " + childNode.attributeVal + "\n LEAF = " + childNode.label)
+        else:
+            child = pydot.Node("val = " + childNode.attributeVal + "\n splitting on: " + list(childNode.info.keys())[0],
+                               label="val = " + childNode.attributeVal + "\n splitting on: " + list(childNode.info.keys())[0])
+            graph.add_node(child)
+            edge = pydot.Edge("val = " + rootNode.attributeVal + "\n splitting on: " + list(rootNode.info.keys())[0],
+                              "val = " + childNode.attributeVal + "\n splitting on: " + list(childNode.info.keys())[0])
+        graph.add_edge(edge)
+    G = nx.drawing.nx_pydot.from_pydot(graph)
+    nx.draw(G)
+    graph.graph_from_dot_file("example.dot")
+            
+        
     
     
     
