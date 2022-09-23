@@ -95,7 +95,7 @@ def AttributeWithHighestInfoGain_Entropy(Subset, Attributes_Left):
 '''
 finds the majority error of an attribute in the subset.
 '''
-def FindMajorityError(Subset, attribute_index):
+def FindMajorityError(Subset, attribute_index, possible_labels):
     labelIdx = len(Subset[0]) - 2
     AttributeValues = np.unique(Subset[:, attribute_index])
     length_subset = Subset.shape[0]
@@ -115,7 +115,7 @@ def FindMajorityError(Subset, attribute_index):
         
         #getting the majority error of Sv
         freq_of_labels = []
-        for label in labels:
+        for label in possible_labels:
             num = 0.0
             for row in Sv:
                 if(row[labelIdx] == label):
@@ -129,7 +129,7 @@ def FindMajorityError(Subset, attribute_index):
 '''
 finds the attribute with the highest information gain using majority error.
 '''
-def AttributeWithHighestInfoGain_MajorityError(Subset, Attributes_Left):
+def AttributeWithHighestInfoGain_MajorityError(Subset, Attributes_Left, possible_labels):
     if(len(Attributes_Left) == 1):
         return Attributes_Left[0]
     
@@ -139,7 +139,7 @@ def AttributeWithHighestInfoGain_MajorityError(Subset, Attributes_Left):
 
     #getting the majority error of the whole subset
     freq_of_labels = []
-    for label in The_labels:
+    for label in possible_labels:
         num = 0.0
         for row in Subset:
             if(row[labelIdx] == label):
@@ -154,7 +154,7 @@ def AttributeWithHighestInfoGain_MajorityError(Subset, Attributes_Left):
     ME_Sv = 0.0
     for Attribute in Attributes_Left:
         attribute_index = Attributes_Left.index(Attribute)
-        ME_Sv = FindMajorityError(Subset, attribute_index)
+        ME_Sv = FindMajorityError(Subset, attribute_index, possible_labels)
         
         temp_Gain = MajErr_S - ME_Sv
         if(len(BestInfoGain) == 0):

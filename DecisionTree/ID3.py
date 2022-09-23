@@ -1,7 +1,8 @@
 from inspect import Attribute
 from re import L
-from Node_problem1_part1 import Node
-from Function_Library_problem1_part1 import *
+from Node import Node
+from Function_Library import *
+from IPython.display import Image, display
 
 #contains the attributes of the set and their values
 ATTRIBUTES = {}
@@ -10,19 +11,21 @@ DATA = pd.DataFrame
 
 DEPTHS = []
 
+POSS_LABELS = []
+
     
 #labels are the possible outputs of the dataset
-def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None):
+def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None, MaxDepth=None):
     SubsetDict = DataFrame.to_dict()
     
     if(Attributes == None): Attributes = GetAttributesLeft(SubsetDict)#need to define the attributes for the first iteration
     
-    labelkey = list(SubsetDict)[-1]
+    labelkey = list(SubsetDict)[-2]
     labelvals = np.array(DataFrame[labelkey])
     data = DataFrame.values
     
     #if all of the labels are the same, return the common label.
-    LabelsAreEqual = All_Labels_Are_Da_Same(DataFrame)
+    LabelsAreEqual = All_Labels_Are_Da_Same(labelvals)
     if(LabelsAreEqual[0]):
         depth+=1
         leafnode = Node(depth=depth, leaf=True, label=LabelsAreEqual[1])
@@ -38,27 +41,37 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None):
         return leafnode
     
     else:
-        depth+=1
+        
         #find the best attribute to split on
-        AttributeToSplit = AttributeWithHighestInfoGain_Entropy(data,Attributes)
+        #AttributeToSplit = AttributeWithHighestInfoGain_MajorityError(data,Attributes,POSS_LABELS)
+        AttributeToSplit = AttributeWithHighestInfoGain_GiniIndex(data,Attributes)
+        #AttributeToSplit = AttributeWithHighestInfoGain_Entropy(data,Attributes)
+
         print(AttributeToSplit)
         info = {AttributeToSplit:[]}
+        if(valOfNode == None):
+            valOfNode = "Root"
         #attributeVal is the value of the attribute that we decided to split on in the last node
         rootNode = Node(info=info, depth=depth, attributeVal=valOfNode)
         
         #Always add a leaf node to each root node that contains the most common label of the rootNode's subset.
-        McL_subset = MostCommonLabel(labelvals)[0]
+        McL_subset = MostCommonLabel(DataFrame,labelvals)[0]
         mostCommonLabel_leafNode = Node(depth=depth+1, leaf=True, attributeVal="MCL", label=McL_subset)
+        if(depth == MaxDepth):
+            DEPTHS.append(depth)
+            return mostCommonLabel_leafNode
         rootNode.info[AttributeToSplit].append(mostCommonLabel_leafNode)
-
+        
+        depth+=1
         PossibleValsOfAttributeToSplit = GetValuesPossibleOfAttribute(DataFrame, AttributeToSplit)
         
+        #go thru each possible value of the attribute youre splitting on
         for val in PossibleValsOfAttributeToSplit:
             new_df = DataFrame
             new_df = SplitData(DataFrame, AttributeToSplit, val)
             #if the new subset is empty, add a leaf node with the most common label in the whole dataset as the leaf label.
             if(new_df.size == 0):
-                McL = MostCommonLabel(labelvals)[0]
+                McL = MostCommonLabel(DataFrame, labelvals)[0]
                 leafNode = Node(depth=depth+1, leaf=True, attributeVal=val, label=McL)
                 rootNode.info[AttributeToSplit].append(leafNode)
                 DEPTHS.append(depth)
@@ -74,22 +87,29 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None):
             else:
                 newAttributes = list(Attributes)
                 newAttributes.remove(AttributeToSplit)
-                rootNode.info[AttributeToSplit].append(ID3(new_df, Attributes=newAttributes, depth=depth, valOfNode=val))
+                rootNode.info[AttributeToSplit].append(ID3(new_df, Attributes=newAttributes, depth=depth, valOfNode=val, MaxDepth=MaxDepth))
         
         return rootNode
                 
                 
-#problem1 binary dataset
-filename = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/Problem_1/part_1/problem1_data.csv"
+                
+            
+#problem2 tennis dataset with missing attribute
+filename = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/TennisDataset_with_missing_attribute.csv"
 
-DATA = Read_Data(filename)
-rootNode = ID3(DATA)
+data = Read_Data(filename)
+DATA = FillMissingAttributes(data, 'Missing', 'c')
+POSS_LABELS = list(np.unique(np.array(DATA[DATA.columns[len(DATA.columns)-2]])))
+rootNode = ID3(DATA, MaxDepth=None)
 print("max depth of tree = " + str(max(DEPTHS)))
 print("done!")
+# graph = pydot.Dot(graph_type='graph')
+# visualize(rootNode,graph)
 
-#problem1 binary dataset
-TestFileName = "/Users/jakehirst/Desktop/Machine Learning/ML_Homeworks/HW1/Problem_1/part_1/problem1_data.csv"
+
+#problem2 tennis dataset with missing attribute
+TestFileName = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/TennisDataset_with_missing_attribute.csv"
 
 columnTitles = DATA.columns.values 
 CheckTreeAgainstTestData(TestFileName, rootNode, columnTitles)
-
+print("Max_Depth = " + str(max(DEPTHS)))
