@@ -35,7 +35,7 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None, MaxDepth=None):
     #if there are no attributes left to split on, return a leaf node with the most common label.
     elif(len(Attributes) == 0):
         depth+=1
-        McL = MostCommonLabel(labelvals)[0]
+        McL = MostCommonLabel(DataFrame,labelvals)[0]
         leafnode = Node(depth=depth, leaf=True, label=McL)
         DEPTHS.append(depth)
         return leafnode
@@ -43,11 +43,11 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None, MaxDepth=None):
     else:
         
         #find the best attribute to split on
-        #AttributeToSplit = AttributeWithHighestInfoGain_MajorityError(data,Attributes,POSS_LABELS)
-        AttributeToSplit = AttributeWithHighestInfoGain_GiniIndex(data,Attributes)
+        AttributeToSplit = AttributeWithHighestInfoGain_MajorityError(data,Attributes,POSS_LABELS)
+        #AttributeToSplit = AttributeWithHighestInfoGain_GiniIndex(data,Attributes)
         #AttributeToSplit = AttributeWithHighestInfoGain_Entropy(data,Attributes)
 
-        print(AttributeToSplit)
+        #print(AttributeToSplit)
         info = {AttributeToSplit:[]}
         if(valOfNode == None):
             valOfNode = "Root"
@@ -95,11 +95,18 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None, MaxDepth=None):
                 
             
 #problem2 tennis dataset with missing attribute
-filename = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/TennisDataset_with_missing_attribute.csv"
+#filename = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/TennisDataset_with_missing_attribute.csv"
+               
+            
+#bank training dataset
+filename = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/bank/train.csv"
+
 
 data = Read_Data(filename)
 DATA = FillMissingAttributes(data, 'Missing', 'c')
 POSS_LABELS = list(np.unique(np.array(DATA[DATA.columns[len(DATA.columns)-2]])))
+columns_to_binarize = ["age", "balance","day","duration","campaign","pdays", "previous"]
+DATA = binarize_numeric_vals(DATA, columns_to_binarize)
 rootNode = ID3(DATA, MaxDepth=None)
 print("max depth of tree = " + str(max(DEPTHS)))
 print("done!")
@@ -110,6 +117,8 @@ print("done!")
 #problem2 tennis dataset with missing attribute
 TestFileName = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/TennisDataset_with_missing_attribute.csv"
 
+#bank tester dataset
+TestFileName = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/bank/test.csv"
 columnTitles = DATA.columns.values 
 CheckTreeAgainstTestData(TestFileName, rootNode, columnTitles)
 print("Max_Depth = " + str(max(DEPTHS)))

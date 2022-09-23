@@ -299,7 +299,7 @@ checks the decision tree made against the tester data set.
 '''
 def CheckTreeAgainstTestData(TestFileName, rootNode, columnTitles):
     Testdf = pd.read_csv(TestFileName)
-    print(Testdf)
+    #print(Testdf)
     TestArray = Testdf.to_numpy()
     labelCol = len(columnTitles) -2
 
@@ -315,10 +315,10 @@ def CheckTreeAgainstTestData(TestFileName, rootNode, columnTitles):
         else:
             incorrect += 1
         
-        print("Row number = " + str(rownum))
-        print("Correct = " + str(correct))
-        print("Incorrect = " + str(incorrect))
-        print("Ratio = " + str(correct / (correct + incorrect)))
+        # print("Row number = " + str(rownum))
+        # print("Correct = " + str(correct))
+        # print("Incorrect = " + str(incorrect))
+        # print("Ratio = " + str(correct / (correct + incorrect)))
         
     print("\nresults are in")
     print("Row number = " + str(rownum))
@@ -338,31 +338,31 @@ def GuessLabel_4_Row(rootNode, row, columnTitles):
     while(Isleaf == False):
         #get the attribute that the current node has split on
         attribute = list(node.info.keys())[0]
-        print("*** "+ attribute + " ***")
+        #print("*** "+ attribute + " ***")
         col = np.where(columnTitles == attribute)[0][0] #column index of the attribute
         value = row[col]
-        print("value should be: " + str(value))
+        #print("value should be: " + str(value))
         #go to the next node until you find a leaf
         for i in range(len(node.info[attribute])):
             #going through each of the child nodes of the current node
             childNode = node.info[attribute][i]
-            print(str(childNode.attributeVal))
+            #print(str(childNode.attributeVal))
             #if the newNode is a leaf and has the correct attributeVal, return the label 
             if(childNode.attributeVal == value and childNode.leaf == True):
-                print("FOUND A LEAF")
+                #print("FOUND A LEAF")
                 return childNode.label
                 break
             #if the newNode 
             elif(childNode.attributeVal == value):
-                print("found the right value")
+                #print("found the right value")
                 node = childNode
                 break
             #if there is no node that has the attribute value that you are looking for, just return
             #the leaf node that has the most common label of the parent node.
             elif(i == len(node.info[attribute]) - 1):
                 return node.info[attribute][0].label
-        print(columnTitles)
-        print(row)
+        #print(columnTitles)
+        #print(row)
   
     
     
@@ -494,6 +494,22 @@ def FillWithFractionalCounts(data, missingIndicator):
         data.loc[len(data.index)] = pd.Series(row)
     return data
     
+'''
+goes through each of the columns_to_binarize in the dataframe DATA, and 
+makes numeric values binary based off of the median of the column.
+'''
+def binarize_numeric_vals(DATA, columns_to_binarize):
+    medians = []
+    for col in columns_to_binarize:
+        medians.append(DATA[col].median())
+    for i in range(len(columns_to_binarize) - 1):
+        for j in range(len(DATA[columns_to_binarize[i]])):
+            if(DATA.at[j,columns_to_binarize[i]] > medians[i]):
+                DATA.at[j,columns_to_binarize[i]] = 1
+            else:
+                DATA.at[j,columns_to_binarize[i]] = 0
+    return DATA
+                
 
 
 
@@ -504,8 +520,9 @@ def FillWithFractionalCounts(data, missingIndicator):
 
 
 
-
-
+'''
+doesnt work
+'''
 def visualize(rootNode,graph):
     root = pydot.Node("val = " + rootNode.attributeVal + '\n splitting on: ' + list(rootNode.info.keys())[0], 
                       label="val = " + rootNode.attributeVal + "\n splitting on: " + list(rootNode.info.keys())[0])
