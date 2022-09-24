@@ -56,6 +56,7 @@ def Information_gain(BigSubset, AttributeToTest_Index, AttributeToTest_possible_
             if(row[AttributeToTest_Index] == value):
                 subset.append(row)
         thingstosum.append((len(subset)/len(BigSubset)) * Entropy(subset, Possible_Outputs))
+        print("Weighted Entropy of " + str(value) + " = " + str((len(subset)/len(BigSubset)) * Entropy(subset, Possible_Outputs)))
     return Entropy(BigSubset, Possible_Outputs) - sum(thingstosum)
 
 '''
@@ -80,8 +81,10 @@ def AttributeWithHighestInfoGain_Entropy(Subset, Attributes_Left):
         for row in range(1, len(Subset)):
             Attribute_possible_values.add(Subset[row][attribute_index])
             Possible_Outputs.add(Subset[row][len(Subset[row]) - 2])
-            
+        
+        print("For attribute: " + Attribute)
         temp = Information_gain(Subset, attribute_index, Attribute_possible_values, Possible_Outputs)
+        print("Information gain = " + str(temp))
         if(len(BestInfoGain) == 0):
             BestInfoGain.append(Attribute)
             BestInfoGain.append(temp)
@@ -123,7 +126,7 @@ def FindMajorityError(Subset, attribute_index, possible_labels):
             freq_of_labels.append(num)
         MajErr_Sv = (min(freq_of_labels)/sum(freq_of_labels))
         total_ME_Sv += ((len(Sv)/length_subset) * MajErr_Sv)
-        
+        print("Weighted ME for " + value + " = " + str(((len(Sv)/length_subset) * MajErr_Sv)))
     return total_ME_Sv
     
 '''
@@ -154,9 +157,10 @@ def AttributeWithHighestInfoGain_MajorityError(Subset, Attributes_Left, possible
     ME_Sv = 0.0
     for Attribute in Attributes_Left:
         attribute_index = Attributes_Left.index(Attribute)
+        print("For attribute: " + Attribute)
         ME_Sv = FindMajorityError(Subset, attribute_index, possible_labels)
-        
         temp_Gain = MajErr_S - ME_Sv
+        print("information gain = " + str(temp_Gain))
         if(len(BestInfoGain) == 0):
             BestInfoGain.append(Attribute)
             BestInfoGain.append(temp_Gain)
@@ -196,7 +200,7 @@ def FindGiniIndex(Subset, attribute_index):
                     num += float(row[labelIdx + 1])
             GI_Sv += -((num/whole)**2)
         total_GI_Sv += ((len(Sv)/length_subset) * GI_Sv)
-        
+        print("Weighted GI for " + value + " = " + str(((len(Sv)/length_subset) * GI_Sv)))
     return total_GI_Sv
     
 '''
@@ -224,9 +228,11 @@ def AttributeWithHighestInfoGain_GiniIndex(Subset, Attributes_Left):
     GI_Sv = 0.0
     for Attribute in Attributes_Left:
         attribute_index = Attributes_Left.index(Attribute)
+        print("For attribute " + Attribute)
         GI_Sv = FindGiniIndex(Subset, attribute_index)
         
         temp_Gain = GI_S - GI_Sv
+        print("Information gain = " + str(temp_Gain))
         if(len(BestInfoGain) == 0):
             BestInfoGain.append(Attribute)
             BestInfoGain.append(temp_Gain)
@@ -297,9 +303,7 @@ def SplitData(DataFrame, AttributeToSplit, val):
 '''
 checks the decision tree made against the tester data set.
 '''
-def CheckTreeAgainstTestData(TestFileName, rootNode, columnTitles):
-    Testdf = pd.read_csv(TestFileName)
-    #print(Testdf)
+def CheckTreeAgainstTestData(Testdf, rootNode, columnTitles):
     TestArray = Testdf.to_numpy()
     labelCol = len(columnTitles) -2
 
@@ -320,11 +324,12 @@ def CheckTreeAgainstTestData(TestFileName, rootNode, columnTitles):
         # print("Incorrect = " + str(incorrect))
         # print("Ratio = " + str(correct / (correct + incorrect)))
         
-    print("\nresults are in")
-    print("Row number = " + str(rownum))
-    print("Correct = " + str(correct))
-    print("Incorrect = " + str(incorrect))
-    print("Percent Correct = " + str((correct / (correct + incorrect)) * 100.0))
+    # print("\nresults are in")
+    # print("Row number = " + str(rownum))
+    # print("Correct = " + str(correct))
+    # print("Incorrect = " + str(incorrect))
+    # print("Percent Correct = " + str((correct / (correct + incorrect)) * 100.0))
+    print("error = " + str(100.0 - ((correct / (correct + incorrect)) * 100.0)))
 
 '''
 helper function for CheckTreeAgainstTestData()
@@ -354,12 +359,13 @@ def GuessLabel_4_Row(rootNode, row, columnTitles):
                 break
             #if the newNode 
             elif(childNode.attributeVal == value):
-                #print("found the right value")
+                #print(":):)found the right value")
                 node = childNode
                 break
             #if there is no node that has the attribute value that you are looking for, just return
             #the leaf node that has the most common label of the parent node.
             elif(i == len(node.info[attribute]) - 1):
+                #print("-----------COULDNT FIND LEAF")
                 return node.info[attribute][0].label
         #print(columnTitles)
         #print(row)
@@ -390,6 +396,9 @@ def FillWithMCA(data, missingIndicator):
     data['weights'] = weights
     attributes = data.columns
     rows_with_missing = []
+    
+    MCAs = []
+    
     #go through all of the rows of the dataset
     for index, row in data.iterrows():
         #go through each attribute in the row
@@ -397,23 +406,25 @@ def FillWithMCA(data, missingIndicator):
             #if there is a missing attribute value, drop it from the dataset and add it to the rows
             #with missing attribute values to be added in later with the correct attribute value
             if(row[attributes[attIDX]] == missingIndicator):
-                rows_with_missing.append((row,attIDX))
+                rows_with_missing.append(row)
                 data = data.drop(index)
+                break
     data.reset_index()
     
     #getting all the new rows and their weights to be added back into the dataset
     newrows = []
     for row in rows_with_missing:
-        columnarray = np.array(data._get_column_array(row[1]))
-        vals_and_freq = np.unique(columnarray, return_counts=True)
-        colval = attributes[row[1]]
-        idx = np.where(vals_and_freq[1] == max(vals_and_freq[1]))[0][0]
-        newrow = dict(row[0])
-        newrow[colval] = vals_and_freq[0][idx]
+        newrow = dict(row)
+        for attribute in attributes:
+            if(row[attribute] == 'unknown'):
+                vals , freq = np.unique(np.array(data[attribute]), return_counts=True)
+                mostCommonInAttribute = vals[freq == freq.max()]
+                newrow[attribute] = mostCommonInAttribute[0]
         newrows.append(newrow)
     #add all of the new rows with the weights back to the dataset
     for row in newrows:
-        data.loc[len(data.index)] = pd.Series(row)
+        data = data.append(pd.Series(row), ignore_index=True)
+        #data.reset_index()
     return data
         
 
@@ -502,7 +513,7 @@ def binarize_numeric_vals(DATA, columns_to_binarize):
     medians = []
     for col in columns_to_binarize:
         medians.append(DATA[col].median())
-    for i in range(len(columns_to_binarize) - 1):
+    for i in range(len(columns_to_binarize)):
         for j in range(len(DATA[columns_to_binarize[i]])):
             if(DATA.at[j,columns_to_binarize[i]] > medians[i]):
                 DATA.at[j,columns_to_binarize[i]] = 1
