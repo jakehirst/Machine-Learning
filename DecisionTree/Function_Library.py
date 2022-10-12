@@ -56,7 +56,7 @@ def Information_gain(BigSubset, AttributeToTest_Index, AttributeToTest_possible_
             if(row[AttributeToTest_Index] == value):
                 subset.append(row)
         thingstosum.append((len(subset)/len(BigSubset)) * Entropy(subset, Possible_Outputs))
-        print("Weighted Entropy of " + str(value) + " = " + str((len(subset)/len(BigSubset)) * Entropy(subset, Possible_Outputs)))
+        #print("Weighted Entropy of " + str(value) + " = " + str((len(subset)/len(BigSubset)) * Entropy(subset, Possible_Outputs)))
     return Entropy(BigSubset, Possible_Outputs) - sum(thingstosum)
 
 '''
@@ -82,9 +82,9 @@ def AttributeWithHighestInfoGain_Entropy(Subset, Attributes_Left):
             Attribute_possible_values.add(Subset[row][attribute_index])
             Possible_Outputs.add(Subset[row][len(Subset[row]) - 2])
         
-        print("For attribute: " + Attribute)
+        #print("For attribute: " + Attribute)
         temp = Information_gain(Subset, attribute_index, Attribute_possible_values, Possible_Outputs)
-        print("Information gain = " + str(temp))
+        #print("Information gain = " + str(temp))
         if(len(BestInfoGain) == 0):
             BestInfoGain.append(Attribute)
             BestInfoGain.append(temp)
@@ -126,7 +126,7 @@ def FindMajorityError(Subset, attribute_index, possible_labels):
             freq_of_labels.append(num)
         MajErr_Sv = (min(freq_of_labels)/sum(freq_of_labels))
         total_ME_Sv += ((len(Sv)/length_subset) * MajErr_Sv)
-        print("Weighted ME for " + value + " = " + str(((len(Sv)/length_subset) * MajErr_Sv)))
+        #print("Weighted ME for " + value + " = " + str(((len(Sv)/length_subset) * MajErr_Sv)))
     return total_ME_Sv
     
 '''
@@ -157,10 +157,10 @@ def AttributeWithHighestInfoGain_MajorityError(Subset, Attributes_Left, possible
     ME_Sv = 0.0
     for Attribute in Attributes_Left:
         attribute_index = Attributes_Left.index(Attribute)
-        print("For attribute: " + Attribute)
+        #print("For attribute: " + Attribute)
         ME_Sv = FindMajorityError(Subset, attribute_index, possible_labels)
         temp_Gain = MajErr_S - ME_Sv
-        print("information gain = " + str(temp_Gain))
+        #print("information gain = " + str(temp_Gain))
         if(len(BestInfoGain) == 0):
             BestInfoGain.append(Attribute)
             BestInfoGain.append(temp_Gain)
@@ -200,7 +200,7 @@ def FindGiniIndex(Subset, attribute_index):
                     num += float(row[labelIdx + 1])
             GI_Sv += -((num/whole)**2)
         total_GI_Sv += ((len(Sv)/length_subset) * GI_Sv)
-        print("Weighted GI for " + value + " = " + str(((len(Sv)/length_subset) * GI_Sv)))
+        #print("Weighted GI for " + str(value) + " = " + str(((len(Sv)/length_subset) * GI_Sv)))
     return total_GI_Sv
     
 '''
@@ -228,11 +228,11 @@ def AttributeWithHighestInfoGain_GiniIndex(Subset, Attributes_Left):
     GI_Sv = 0.0
     for Attribute in Attributes_Left:
         attribute_index = Attributes_Left.index(Attribute)
-        print("For attribute " + Attribute)
+        #print("For attribute " + Attribute)
         GI_Sv = FindGiniIndex(Subset, attribute_index)
         
         temp_Gain = GI_S - GI_Sv
-        print("Information gain = " + str(temp_Gain))
+        #print("Information gain = " + str(temp_Gain))
         if(len(BestInfoGain) == 0):
             BestInfoGain.append(Attribute)
             BestInfoGain.append(temp_Gain)
@@ -329,7 +329,8 @@ def CheckTreeAgainstTestData(Testdf, rootNode, columnTitles):
     # print("Correct = " + str(correct))
     # print("Incorrect = " + str(incorrect))
     # print("Percent Correct = " + str((correct / (correct + incorrect)) * 100.0))
-    print("error = " + str(100.0 - ((correct / (correct + incorrect)) * 100.0)))
+    error = 100.0 - ((correct / (correct + incorrect)) * 100.0)
+    return error
 
 '''
 helper function for CheckTreeAgainstTestData()
@@ -520,13 +521,6 @@ def binarize_numeric_vals(DATA, columns_to_binarize):
             else:
                 DATA.at[j,columns_to_binarize[i]] = 0
     return DATA
-                
-
-
-
-
-
-
 
 
 
