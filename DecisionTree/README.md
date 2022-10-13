@@ -6,9 +6,9 @@ Preprocess data:
 ================
 To preprocess the data, you must follow the code in the " DATA PREPROCESSING " section of ID3.py. data is the learning data, and Testdf is the test data. 
 
-If you would like to fill in missing attributes, call FillMissingAttributes(), with the first parameter being the dataframe you want to fill, the second parameter being the indentifier of what a cell in the csv will have in it if it is missing, and the third parameter being the way that you fill the missing attribute ("a" = Most Common value of the Attribute, "b" = the most common value of the attribute with rows that have the same label, "c" = Fractional Counts)
+**If you would like to fill in missing attributes**, call FillMissingAttributes(), with the first parameter being the dataframe you want to fill, the second parameter being the indentifier of what a cell in the csv will have in it if it is missing, and the third parameter being the way that you fill the missing attribute ("a" = Most Common value of the Attribute, "b" = the most common value of the attribute with rows that have the same label, "c" = Fractional Counts)
 
-If you would like to binarize the numeric values in your dataset, you must first identify the columns that you would like to be binarized in a list as shown in the beginning of the " DATA PREPROCESSING " section. Then, you must call binarize_numeric_vals() with the first parameter being the dataframe you would like to binarize, and the second parameter being the list of attributes you would like to binarize.
+**If you would like to binarize the numeric values in your dataset**, you must first identify the columns that you would like to be binarized in a list as shown in the beginning of the " DATA PREPROCESSING " section. Then, you must call binarize_numeric_vals() with the first parameter being the dataframe you would like to binarize, and the second parameter being the list of attributes you would like to binarize.
 
 Finally, you must identify the possible labels in the dataset as a global list. This is the last step in the " DATA PREPROCESSING " section and can be done as shown.
 
