@@ -18,7 +18,7 @@ TESTDF = None
 
     
 #labels are the possible outputs of the dataset
-def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None, MaxDepth=None):
+def ID3(DataFrame, InfoGainMethod, Attributes=None, depth=0, valOfNode=None, MaxDepth=None):
     SubsetDict = DataFrame.to_dict()
     if(depth > MaxDepth):
         MaxDepth = depth
@@ -48,9 +48,14 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None, MaxDepth=None):
     else:
         
         #find the best attribute to split on
-        #AttributeToSplit = AttributeWithHighestInfoGain_MajorityError(data,Attributes,POSS_LABELS)
-        AttributeToSplit = AttributeWithHighestInfoGain_GiniIndex(data,Attributes)
-        #AttributeToSplit = AttributeWithHighestInfoGain_Entropy(data,Attributes)
+        if(InfoGainMethod == "MajorityError"):
+            AttributeToSplit = AttributeWithHighestInfoGain_MajorityError(data,Attributes,POSS_LABELS)
+        elif(InfoGainMethod == "GiniIndex"):
+            AttributeToSplit = AttributeWithHighestInfoGain_GiniIndex(data,Attributes)
+        elif(InfoGainMethod == "Entropy"):
+            AttributeToSplit = AttributeWithHighestInfoGain_Entropy(data,Attributes)
+        else:
+            print("Need to specify the InfoGainMethod")
         
         #print(AttributeToSplit)
         info = {AttributeToSplit:[]}
@@ -97,111 +102,80 @@ def ID3(DataFrame, Attributes=None, depth=0, valOfNode=None, MaxDepth=None):
             else:
                 newAttributes = list(Attributes)
                 newAttributes.remove(AttributeToSplit)
-                rootNode.info[AttributeToSplit].append(ID3(new_df, Attributes=newAttributes, depth=depth, valOfNode=val, MaxDepth=MaxDepth))
+                rootNode.info[AttributeToSplit].append(ID3(new_df, InfoGainMethod, Attributes=newAttributes, depth=depth, valOfNode=val, MaxDepth=MaxDepth))
         
         return rootNode
                 
                 
-
-
-def runID3(data, Maxdepth, Testdf):
-    rootNode = ID3(data, MaxDepth=Maxdepth)
+""" This function runs the ID3 algorithm and tests it against the Testdf dataset, printing the results. """
+def runID3(data, InfoGainMethod, Maxdepth, Testdf):
+    rootNode = ID3(data, InfoGainMethod, MaxDepth=Maxdepth)
     columnTitles = data.columns.values 
     error = CheckTreeAgainstTestData(Testdf, rootNode, columnTitles)
-    print("max depth of tree = " + str(Maxdepth) + " error = " + str(error))
+    print("max depth of tree = " + str(Maxdepth) + " test error = " + str(error))
 
-
-# def check_result(rootNode):
-#     CheckTreeAgainstTestData(Testdf, rootNode, columnTitles=DATA.columns.values )
-
-
-
-
-#columnTitles = DATA.columns.values 
-#CheckTreeAgainstTestData(Testdf, rootNode, columnTitles)
-# for i in range(1,18):
-
-#     rootNode = ID3(data, MaxDepth=i)
-#     print("max depth of tree = " + str(max(DEPTHS)))
-
-
-#     columnTitles = data.columns.values 
-#     CheckTreeAgainstTestData(Testdf, rootNode, columnTitles)
 
 if __name__ == "__main__":
+    
+    """Training data File Names"""
     #problem2 tennis dataset
     #filename = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/TennisDataset.csv"
-
-
     #problem2 tennis dataset with missing attribute
-    #filename = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/TennisDataset_with_missing_attribute.csv"
-                
-                
+    #filename = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/TennisDataset_with_missing_attribute.csv"  
     #bank training dataset
     filename = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/bank/train.csv"
-
     #car training dataset
     #filename = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/car/train.csv"
 
-    data = Read_Data(filename)
-    DATA = FillMissingAttributes(data, 'unknown', 'a')
-    columns_to_binarize = ["age", "balance","day","duration","campaign","pdays", "previous"]
-    data = binarize_numeric_vals(data, columns_to_binarize)
-    #DATA = FillMissingAttributes(data, 'Missing', 'c')
-    POSS_LABELS = list(np.unique(np.array(DATA[DATA.columns[len(DATA.columns)-2]])))
-
+    """Test data file Names"""
     #problem2 tennis dataset
     #TestFileName = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/TennisDataset.csv"
-
     #problem2 tennis dataset with missing attribute
     #TestFileName = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/TennisDataset_with_missing_attribute.csv"
-
     #bank tester dataset
     TestFileName = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/bank/test.csv"
-
     #bank training dataset
     #TestFileName = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/bank/train.csv"
-
-
     #car training dataset
     #TestFileName = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/car/train.csv"
-
     #car test dataset
     #TestFileName = "/Users/jakehirst/Desktop/Machine Learning/DecisionTree/car/test.csv"
-    Testdf = pd.read_csv(TestFileName)
-    Testdf = binarize_numeric_vals(Testdf, columns_to_binarize)
-    Testdf = FillMissingAttributes(Testdf, 'unknown', 'a')
-
-    TESTDF = Testdf
-    #rootNode = ID3(DATA, MaxDepth=None)
-    #print("max depth of tree = " + str(max(DEPTHS)))
     
-    p = Pool(8)
+    
+    """ --------  RUNNING CODE HERE  -------- """
+
+
+    """ DATA PREPROCESSING """
+    columns_to_binarize = ["age", "balance","day","duration","campaign","pdays", "previous"]
+
+    data = Read_Data(filename)
+    DATA = FillMissingAttributes(data, 'unknown', 'a')
+    data = binarize_numeric_vals(data, columns_to_binarize)
+
+    Testdf = Read_Data(TestFileName)
+    Testdf = FillMissingAttributes(Testdf, 'unknown', 'a')
+    Testdf = binarize_numeric_vals(Testdf, columns_to_binarize)
+    TESTDF = Testdf
+    
+    POSS_LABELS = list(np.unique(np.array(DATA[DATA.columns[len(DATA.columns)-2]])))
+    """ DATA PREPROCESSING """
+
+
+    """ Running ID3 with multiple MaxDepths """
+    InfoGainMethod = "Entropy" #can replace this with "MajorityError" or "Entropy" or "GiniIndex"
+    p = Pool(4) #change this to decide how many cores to use in multiprocessing
     results = []
     for MaxDepth in range(17,0, -1):
-        rN = p.apply_async(runID3, [data, MaxDepth, Testdf])
-
-        #rN = p.apply_async(runID3, [data, MaxDepth], callback=check_result)
+        rN = p.apply_async(runID3, [data, InfoGainMethod, MaxDepth, Testdf])
         results.append(rN)
-
     for r in results:
         r.wait()
-        
     p.close()
     p.join()
     
-    for r in results:
-        print(r._value)
+    # for r in results:
+    #     print(r._value)
     print("done")
-    print("hi")
     
-    #columnTitles = DATA.columns.values 
-    #CheckTreeAgainstTestData(Testdf, rootNode, columnTitles)
-    # for i in range(1,18):
-
-    #     rootNode = ID3(data, MaxDepth=i)
-    #     print("max depth of tree = " + str(max(DEPTHS)))
-
-
-    #     columnTitles = data.columns.values 
-    #     CheckTreeAgainstTestData(Testdf, rootNode, columnTitles)
+    """ Running ID3 with multiple MaxDepths """
+    """ --------  RUNNING CODE HERE  -------- """

@@ -15,7 +15,6 @@ import matplotlib.pyplot as plt
 Reads the data from a csv. The csv has to have the attribute keys on the top row, and the labels in columns underneath their respecitve attributes.
 '''
 def Read_Data(filename):
-    OrganizedData = {}
     df = pd.read_csv(filename)
     return df
 
