@@ -1,7 +1,7 @@
 This README contains detailed instructions on how to learn decision trees with my code.
 
 ** This code works with slightly pre-processed datasets, where I included the attribute names as the first row of the csv. I have included the pre-processed datasets in the DecisionTree folder. **
-
+---
 Preprocess data:
 ================
 To preprocess the data, you must follow the code in the " DATA PREPROCESSING " section of ID3.py. data is the learning data, and Testdf is the test data. 
@@ -13,7 +13,7 @@ To preprocess the data, you must follow the code in the " DATA PREPROCESSING " s
 Finally, you must identify the possible labels in the dataset as a global list. This is the last step in the " DATA PREPROCESSING " section and can be done as shown.
 
 ALL OF THE PREPROCESS DATA STEPS MUST BE DONE FOR BOTH THE TRAINING AND TESTING DATASETS 
-
+---
 Running ID3 algorithm:
 =======
 
