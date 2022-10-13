@@ -144,7 +144,6 @@ if __name__ == "__main__":
     
     """ --------  RUNNING CODE HERE  -------- """
 
-
     """ DATA PREPROCESSING """
     columns_to_binarize = ["age", "balance","day","duration","campaign","pdays", "previous"]
 
