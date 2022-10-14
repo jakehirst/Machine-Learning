@@ -447,6 +447,7 @@ def FillWithMCA_SameLabel(data, missingIndicator):
             if(row[attributes[attIDX]] == missingIndicator):
                 rows_with_missing.append((row,attIDX))
                 data = data.drop(index)
+                break
     data.reset_index()
     
     #getting all the new rows and their weights to be added back into the dataset
@@ -462,8 +463,10 @@ def FillWithMCA_SameLabel(data, missingIndicator):
         newrows.append(newrow)
 
     #add all of the new rows with the weights back to the dataset
-    for row in newrows:
-        data.loc[len(data.index)] = pd.Series(row)
+    newdf = pd.json_normalize(newrows)
+    data = pd.concat([data, newdf])
+    data = data.reset_index(drop=True)
+    
     return data
     
 '''

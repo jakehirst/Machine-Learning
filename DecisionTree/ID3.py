@@ -177,11 +177,11 @@ if __name__ == "__main__":
     columns_to_binarize = ["age", "balance","day","duration","campaign","pdays", "previous"]
 
     data = Read_Data(filename)
-    data = FillMissingAttributes(data, 'unknown', 'c')
+    data = FillMissingAttributes(data, 'unknown', 'b')
     data = binarize_numeric_vals(data, columns_to_binarize)
 
     Testdf = Read_Data(TestFileName)
-    Testdf = FillMissingAttributes(Testdf, 'unknown', 'c')
+    Testdf = FillMissingAttributes(Testdf, 'unknown', 'b')
     Testdf = binarize_numeric_vals(Testdf, columns_to_binarize)
     """ DATA PREPROCESSING """
     
@@ -192,7 +192,7 @@ if __name__ == "__main__":
 
 
     """ Running ID3 with multiple MaxDepths """
-    InfoGainMethod = "MajorityError" #can replace this with "MajorityError" or "Entropy" or "GiniIndex"
+    InfoGainMethod = "GiniIndex" #can replace this with "MajorityError" or "Entropy" or "GiniIndex"
     p = Pool(8) #change this to decide how many cores to use in multiprocessing
     results = []
     for MaxDepth in range(17,0, -1):
