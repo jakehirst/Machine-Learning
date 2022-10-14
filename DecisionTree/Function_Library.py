@@ -483,26 +483,42 @@ def FillWithFractionalCounts(data, missingIndicator):
             #if there is a missing attribute value, drop it from the dataset and add it to the rows
             #with missing attribute values to be added in later with the correct attribute value
             if(row[attributes[attIDX]] == missingIndicator):
-                rows_with_missing.append((row,attIDX))
+                rows_with_missing.append(row)
                 data = data.drop(index)
+                break
     data.reset_index()
     
     #getting all the new rows and their weights to be added back into the dataset
     newrows = []
+    temprows = []
+    rowsToRemove = []
     for row in rows_with_missing:
-        columnarray = np.array(data._get_column_array(row[1]))
-        vals_and_freq = np.unique(columnarray, return_counts=True)
-        colval = attributes[row[1]]
-        for i in range(len(vals_and_freq[0])):
-            attval = vals_and_freq[0][i]
-            newrow = dict(row[0])
-            newrow[colval] = attval
-            newrow['weights'] = vals_and_freq[1][i]/sum(vals_and_freq[1])
-            newrows.append(newrow)
-
+        temprows.append(dict(row))
+        for r in temprows:
+            for col in range(len(attributes)-2):
+                if(r[attributes[col]] == missingIndicator):
+                    rowsToRemove.append(r)
+                    columnarray = np.array(data._get_column_array(col)) #all the values of the attribute in the column in array form
+                    vals_and_freq = np.unique(columnarray, return_counts=True) #unique values of the columnarray, and often they appear
+                    colval = attributes[col] # the attribute that we are looking at here
+                    for i in range(len(vals_and_freq[0])):
+                        attval = vals_and_freq[0][i]
+                        newrow = dict(r)
+                        newrow[colval] = attval
+                        newrow['weights'] = (vals_and_freq[1][i]/sum(vals_and_freq[1])) * r['weights']
+                        temprows.append(newrow)
+                    break
+        for remove in rowsToRemove:
+            temprows.remove(remove)
+        newrows.extend(temprows)
+        temprows.clear()
+        rowsToRemove.clear()  
+    
     #add all of the new rows with the weights back to the dataset
-    for row in newrows:
-        data.loc[len(data.index)] = pd.Series(row)
+    newdf = pd.json_normalize(newrows)
+    data = pd.concat([data, newdf])
+    data = data.reset_index(drop=True)
+
     return data
     
 '''

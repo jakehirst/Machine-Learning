@@ -14,8 +14,6 @@ DEPTHS = []
 
 POSS_LABELS = []
 
-TESTDF = None
-
     
 #labels are the possible outputs of the dataset
 def ID3(DataFrame, InfoGainMethod, Attributes=None, depth=0, valOfNode=None, MaxDepth=None):
@@ -49,7 +47,8 @@ def ID3(DataFrame, InfoGainMethod, Attributes=None, depth=0, valOfNode=None, Max
         
         #find the best attribute to split on
         if(InfoGainMethod == "MajorityError"):
-            AttributeToSplit = AttributeWithHighestInfoGain_MajorityError(data,Attributes,POSS_LABELS)
+            poss_labels = list(np.unique(data[:,data.shape[1] - 2]))
+            AttributeToSplit = AttributeWithHighestInfoGain_MajorityError(data,Attributes,poss_labels)
         elif(InfoGainMethod == "GiniIndex"):
             AttributeToSplit = AttributeWithHighestInfoGain_GiniIndex(data,Attributes)
         elif(InfoGainMethod == "Entropy"):
@@ -113,6 +112,36 @@ def runID3(data, InfoGainMethod, Maxdepth, Testdf):
     columnTitles = data.columns.values 
     error = CheckTreeAgainstTestData(Testdf, rootNode, columnTitles)
     print("max depth of tree = " + str(Maxdepth) + " test error = " + str(error))
+    return [rootNode, error]
+
+
+'''preps the data with FillMissingAttributes and binarize_numeric_vals'''
+def prepData(filename, MissingIndicator=None, howToFill=None, columns_to_binarize=None):
+    data = Read_Data(filename)
+    #if there is a missing indicator and a howToFill method, then go ahead and fill the missing attributes.
+    if((not MissingIndicator == None) and (not howToFill == None)):
+        data = FillMissingAttributes(data, MissingIndicator, howToFill)
+    #if there are columns to binarize, then go ahead and binarize those columns
+    if(not columns_to_binarize == None):
+        data = binarize_numeric_vals(data, columns_to_binarize)
+    return data
+
+
+'''uses multiprocessing to prep the data quickly'''
+def prepData_quickly(filenames, MissingIndicator=None, howToFill=None, columns_to_binarize=None):
+    prep_pool = Pool(2) #change this to decide how many cores to use in multiprocessing
+    prepped_data = []
+    for filename in filenames:
+        rootNode_and_Error = prep_pool.apply_async(prepData, [filename, MissingIndicator, howToFill, columns_to_binarize])
+        prepped_data.append(rootNode_and_Error)
+    for data in prepped_data:
+        data.wait()
+    prep_pool.close()
+    prep_pool.join()
+    
+    data = prepped_data[0].get()
+    Testdf = prepped_data[1].get()
+    return data, Testdf
 
 
 if __name__ == "__main__":
@@ -148,32 +177,34 @@ if __name__ == "__main__":
     columns_to_binarize = ["age", "balance","day","duration","campaign","pdays", "previous"]
 
     data = Read_Data(filename)
-    DATA = FillMissingAttributes(data, 'unknown', 'a')
+    data = FillMissingAttributes(data, 'unknown', 'c')
     data = binarize_numeric_vals(data, columns_to_binarize)
 
     Testdf = Read_Data(TestFileName)
-    Testdf = FillMissingAttributes(Testdf, 'unknown', 'a')
+    Testdf = FillMissingAttributes(Testdf, 'unknown', 'c')
     Testdf = binarize_numeric_vals(Testdf, columns_to_binarize)
-    TESTDF = Testdf
-    
-    POSS_LABELS = list(np.unique(np.array(DATA[DATA.columns[len(DATA.columns)-2]])))
     """ DATA PREPROCESSING """
+    
+    # filenames = [filename, TestFileName]
+    # data, Testdf = prepData_quickly(filenames, 'unknown', 'a', columns_to_binarize)
+
+    POSS_LABELS = list(np.unique(np.array(data[data.columns[len(data.columns)-2]])))
 
 
     """ Running ID3 with multiple MaxDepths """
-    InfoGainMethod = "Entropy" #can replace this with "MajorityError" or "Entropy" or "GiniIndex"
-    p = Pool(4) #change this to decide how many cores to use in multiprocessing
+    InfoGainMethod = "MajorityError" #can replace this with "MajorityError" or "Entropy" or "GiniIndex"
+    p = Pool(8) #change this to decide how many cores to use in multiprocessing
     results = []
     for MaxDepth in range(17,0, -1):
-        rN = p.apply_async(runID3, [data, InfoGainMethod, MaxDepth, Testdf])
-        results.append(rN)
+        rootNode_and_Error = p.apply_async(runID3, [data, InfoGainMethod, MaxDepth, Testdf])
+        results.append(rootNode_and_Error)
     for r in results:
         r.wait()
     p.close()
     p.join()
     
-    # for r in results:
-    #     print(r._value)
+    for r in results:
+        print(r._value)
     print("done")
     
     """ Running ID3 with multiple MaxDepths """

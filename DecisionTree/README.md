@@ -10,8 +10,6 @@ To preprocess the data, you must follow the code in the " DATA PREPROCESSING " s
 
 **If you would like to binarize the numeric values in your dataset**, you must first identify the columns that you would like to be binarized in a list as shown in the beginning of the " DATA PREPROCESSING " section. Then, you must call binarize_numeric_vals() with the first parameter being the dataframe you would like to binarize, and the second parameter being the list of attributes you would like to binarize.
 
-Finally, you must identify the possible labels in the dataset as a global list. This is the last step in the " DATA PREPROCESSING " section and can be done as shown.
-
 ALL OF THE PREPROCESS DATA STEPS MUST BE DONE FOR BOTH THE TRAINING AND TESTING DATASETS 
 ---
 Running ID3 algorithm:
