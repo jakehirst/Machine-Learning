@@ -314,10 +314,10 @@ def CheckTreeAgainstTestData(Testdf, rootNode, columnTitles):
         labelFromtree = GuessLabel_4_Row(rootNode, row, columnTitles)
         labelFromRow = row[labelCol]
         if(labelFromtree == labelFromRow):
-            correct += 1
+            correct += row[len(row) -1]
         else:
-            incorrect += 1
-        
+            incorrect += row[len(row) -1]
+
         # print("Row number = " + str(rownum))
         # print("Correct = " + str(correct))
         # print("Incorrect = " + str(incorrect))
@@ -334,6 +334,10 @@ def CheckTreeAgainstTestData(Testdf, rootNode, columnTitles):
 '''
 helper function for CheckTreeAgainstTestData()
 checks to see if the row in the test data outputs the correct label 
+
+columnTitles = np.array()
+row = np.array()
+rootNode = Node object
 '''
 def GuessLabel_4_Row(rootNode, row, columnTitles):
     Isleaf = False
