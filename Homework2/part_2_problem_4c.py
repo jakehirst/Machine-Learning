@@ -19,7 +19,8 @@ from Linear_Regression.LMS import *
 
 
 if __name__ == "__main__":
-    TrainingFilename = "/Users/jakehirst/Downloads/slump_test.csv"
+    path_to_data = sys.path[0]
+    TrainingFilename = path_to_data + "/slump_test.csv"
     initialDF = ReadFileAsDataFrame(TrainingFilename)
     colToTrim = ["No", "Compressive Strength (28-day)(Mpa)", "FLOW(cm)", "SLUMP(cm)"]
     x = np.array(TrimColumns(initialDF, colToTrim))

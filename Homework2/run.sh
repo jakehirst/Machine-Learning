@@ -2,7 +2,6 @@
 #Then, type "bash run.sh &" to run the code!
 
 
-
 echo running part 1 problem 5
 python part_1_problem_5.py
 echo running part 2 problem 2 a

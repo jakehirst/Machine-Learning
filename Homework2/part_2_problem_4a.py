@@ -16,4 +16,5 @@ from Ensemble_Learning.Bagging import *
 from Linear_Regression.LMS import *
 
 if __name__ == "__main__":
-    problem4a()
+    TrainingFilename = newpath + "Homework2/slump_test.csv"
+    problem4a(TrainingFilename)

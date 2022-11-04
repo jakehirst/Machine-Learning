@@ -15,8 +15,10 @@ from Ensemble_Learning.Adaboost import *
 from Ensemble_Learning.Bagging import *
 
 if __name__ == "__main__":
-    number3_bagging()
-    number3_random_forest()
+    TestFileName = newpath + "Ensemble_Learning/number3_TestDf.csv"
+    TrainingFileName = newpath + "Ensemble_Learning/number3_TrainingDf.csv"
+    number3_bagging(TestFileName, TrainingFileName)
+    number3_random_forest(TestFileName, TrainingFileName)
 # def problem3_adaboost():
 #     TestFileName = "Ensemble_Learning/number3_TestDf.csv"
 #     filename = "Ensemble_Learning/number3_TrainingDf.csv"

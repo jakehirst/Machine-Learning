@@ -192,8 +192,8 @@ def RunBatchedGradientDecent(TrainingDf, tolerance_level, r):
     print("MIN COST = " + str(min(costs)))
     return [w_t, iterations, norms, converged, costs, min(costs)]
 
-def problem4a():
-    TrainingFilename = "/Users/jakehirst/Downloads/slump_test.csv"
+def problem4a(TrainingFilename):
+    #TrainingFilename = "/Users/jakehirst/Downloads/slump_test.csv"
     initialDF = ReadFileAsDataFrame(TrainingFilename)
     colToTrim = ["No", "Compressive Strength (28-day)(Mpa)", "FLOW(cm)"]
     trimmedDf = TrimColumns(initialDF, colToTrim)
@@ -216,8 +216,8 @@ def problem4a():
     plt.legend(loc='upper right')
     plt.show()
     
-def problem4b():
-    TrainingFilename = "/Users/jakehirst/Downloads/slump_test.csv"
+def problem4b(TrainingFilename):
+    #TrainingFilename = "/Users/jakehirst/Downloads/slump_test.csv"
     initialDF = ReadFileAsDataFrame(TrainingFilename)
     colToTrim = ["No", "Compressive Strength (28-day)(Mpa)", "FLOW(cm)"]
     trimmedDf = TrimColumns(initialDF, colToTrim)

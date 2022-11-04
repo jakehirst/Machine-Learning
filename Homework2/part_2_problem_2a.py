@@ -5,6 +5,8 @@ last = x[l-1]
 newpath = sys.path[0].rstrip(last)
 sys.path.append(newpath)
 sys.path.append(newpath + "Ensemble_Learning")
+sys.path.append(newpath + "DecisionTree")
+sys.path.append(newpath + "DecisionTree/bank")
 from DecisionTree import ID3
 from DecisionTree.Function_Library import *
 from Ensemble_Learning import *
@@ -16,8 +18,8 @@ from Ensemble_Learning.Adaboost import *
 
 
 if __name__ == "__main__":
-    filename = "/Users/jakehirst/Desktop/Machine_Learning/DecisionTree/bank/train.csv"
-    TestFileName = "/Users/jakehirst/Desktop/Machine_Learning/DecisionTree/bank/test.csv"
+    filename = newpath + "/DecisionTree/bank/train.csv"
+    TestFileName = newpath + "/DecisionTree/bank/test.csv"
     columns_to_binarize = ["age", "balance","day","duration","campaign","pdays", "previous"]
 
 

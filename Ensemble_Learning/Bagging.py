@@ -183,9 +183,9 @@ def SplitTrainingAndTesting(df, NumTestingExamples):
 
     return TestDf.reset_index(), df.reset_index()
 
-def number3_bagging():
-    TestFileName = "Ensemble_Learning/number3_TestDf.csv"
-    TrainingFilename = "Ensemble_Learning/number3_TrainingDf.csv"
+def number3_bagging(TestFileName, TrainingFilename):
+    # TestFileName = "Ensemble_Learning/number3_TestDf.csv"
+    # TrainingFilename = "Ensemble_Learning/number3_TrainingDf.csv"
 
     columns_to_binarize = ["LIMIT_BAL", "AGE","BILL_AMT1","BILL_AMT3","BILL_AMT4","BILL_AMT5", "BILL_AMT6", "PAY_AMT1", "PAY_AMT2" ,"PAY_AMT3" ,"PAY_AMT4","PAY_AMT5" ,"PAY_AMT6" ]
 
@@ -242,9 +242,9 @@ def number3_bagging():
     
 
 
-def number3_random_forest():
-    TestFileName = "Ensemble_Learning/number3_TestDf.csv"
-    TrainingFilename = "Ensemble_Learning/number3_TrainingDf.csv"
+def number3_random_forest(TestFileName, TrainingFilename):
+    # TestFileName = "Ensemble_Learning/number3_TestDf.csv"
+    # TrainingFilename = "Ensemble_Learning/number3_TrainingDf.csv"
 
     columns_to_binarize = ["LIMIT_BAL", "AGE","BILL_AMT1","BILL_AMT3","BILL_AMT4","BILL_AMT5", "BILL_AMT6", "PAY_AMT1", "PAY_AMT2" ,"PAY_AMT3" ,"PAY_AMT4","PAY_AMT5" ,"PAY_AMT6" ]
 
@@ -252,7 +252,7 @@ def number3_random_forest():
     max_number_of_trees = 500
     InfoGainMethod = "GiniIndex"
     
-    trees = Get_Forest(TrainingFilename, max_number_of_trees, m_prime, InfoGainMethod, columns_to_binarize)
+    trees = Get_Forest(TrainingFilename, max_number_of_trees, m_prime, InfoGainMethod, columns_to_binarize, 2)
 
     start_time = time.time()
     TrainingDf = prep_subset(pd.read_csv(TrainingFilename), columns_to_binarize=columns_to_binarize)

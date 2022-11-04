@@ -16,8 +16,8 @@ from Ensemble_Learning.Bagging import *
 
 if __name__ == "__main__":
 
-    TrainingFilename = "/Users/jakehirst/Desktop/Machine_Learning/DecisionTree/bank/train.csv"
-    TestFileName = "/Users/jakehirst/Desktop/Machine_Learning/DecisionTree/bank/test.csv"
+    TrainingFilename = newpath + "/DecisionTree/bank/train.csv"
+    TestFileName = newpath + "/DecisionTree/bank/test.csv"
     columns_to_binarize = ["age", "balance","day","duration","campaign","pdays", "previous"]
 
         
