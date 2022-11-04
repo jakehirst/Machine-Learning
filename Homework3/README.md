@@ -1,0 +1,1 @@
+To run this code, just navigate to the Homework3 folder in your terminal, and type run.sh & to run the homework3 code.
