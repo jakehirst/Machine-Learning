@@ -24,7 +24,7 @@ def compute_node_vector(weights, node_vector, activation_function, output_layer=
         return new_node_vector.T
 
 
-#each row corresponds to an input node, and each column corresponds to the output node it is adding to
+#each row of the weight matricies corresponds to an input node, and each column corresponds to the output node it is adding to
 w1 = np.array([[-1, 1],
                [-2, 2],
                [-3, 3]])
@@ -43,7 +43,14 @@ input_x = np.array([[1,1,1]])
 z1 = compute_node_vector(w1, input_x, "sigmoid")
 z2 = compute_node_vector(w2, z1, "sigmoid")
 y = compute_node_vector(w3, z2, "linear", output_layer=True)
-print(y)
+print("\n" + str(y))
+print("\nw3 = \n" + str(w3))
+print("z2 = " + str(z2))
+print("\nw2 = \n" + str(w2))
+print("z1 = " + str(z1))
+print("\nw1 = \n" + str(w1))
+print("x = " + str(input_x))
+print("done")
 
 
 
