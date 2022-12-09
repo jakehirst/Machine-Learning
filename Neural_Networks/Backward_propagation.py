@@ -25,28 +25,57 @@ def back_propogate(y, network, z_matrix, input, true_y):
     for i in range(len(dL_dz_matrix[0])):
         dL_dz_matrix[0][i] = dL_dy * output_weights[i+1]
     
-    
-    
+    #going through all the hidden layer delta weights
     delta_hidden_weights = np.zeros(hidden_weights.shape)
     for layer in range(hidden_weights.shape[0], 0, -1):
-        print(dL_dz_matrix)
-        dL_dz_matrix = update_dL_dz_matrix(dL_dz_matrix, hidden_weights[layer-1], len(z_matrix[layer-1]))
-        print(dL_dz_matrix)
+        
         for parent in range(hidden_weights.shape[1]):
             for child in range(hidden_weights.shape[2]):
-                if(layer == 0):
-                    delta_hidden_weights[layer][parent][child] =  None
-                else:
-                    delta_hidden_weights[layer][parent][child] =  None
+                
+                s = np.matmul(hidden_weights[layer-1][parent], z_matrix[layer])
+                dz_dw = delta_sigmoid(s)
+                delta_hidden_weights[layer - 1][parent][child] = dL_dz_matrix[0][parent] * dz_dw * z_matrix[layer-1][child]
+                print(delta_hidden_weights)
+                print("\n")
+        
+        # print(dL_dz_matrix)
+        # print(hidden_weights)
+        dL_dz_matrix = update_dL_dz_matrix(dL_dz_matrix, hidden_weights[layer-1], z_matrix[layer])
+        # print(dL_dz_matrix)
+    
+    # dL_dz_matrix = update_dL_dz_matrix(dL_dz_matrix, input_weights, input)
+    #getting delta input weights
+    delta_input_weights = np.zeros(input_weights.shape)
+    for parent in range(len(z_matrix[0])-1):
+        for input_num in range(input_weights.shape[1]):
+            s = np.matmul(input_weights[parent], input)
+            dz_dw = delta_sigmoid(s)
+            delta_input_weights[parent][input_num] = dL_dz_matrix[0][parent] * dz_dw * input[input_num]
+    
+    print("\n")
+    print(delta_output_weights)
+    print(delta_hidden_weights)
+    print(delta_input_weights)
+    print("done")
+    return delta_output_weights, delta_hidden_weights, delta_input_weights
+        
+                    
     
 
-def update_dL_dz_matrix(dL_dz_matrix, hidden_weights, l, input_layer=False):
-    new_row = np.array([np.zeros(l)])
-
-    for i in range(1, len(dL_dz_matrix[0])):
-        new_row[0][i] = np.matmul(dL_dz_matrix[0], hidden_weights[i])
+def update_dL_dz_matrix(dL_dz_matrix, hidden_weights, z_layer):
+    num_parents = len(dL_dz_matrix[0])
+    new_row = np.array([np.zeros(num_parents)])
+    dz_dz = np.zeros(num_parents)
+    
+    for parent_count in range(num_parents):
+        for parent_count_2 in range(num_parents):
+            s = np.matmul(hidden_weights[parent_count_2], z_layer)
+            delta_s = delta_sigmoid(s)
+        dz_dz[parent_count] = delta_s * hidden_weights[parent_count][parent_count_2]
+        new_row[0][parent_count] = np.matmul(dL_dz_matrix[0], dz_dz) # np.delete(hidden_weights[i], 0))
         
-    dL_dz_matrix = np.append(dL_dz_matrix, new_row, axis=0)
+    #dL_dz_matrix = np.append(dL_dz_matrix, new_row, axis=0)
+    print(new_row)
     return new_row
     # dL_dz_matrix.append()    
     
