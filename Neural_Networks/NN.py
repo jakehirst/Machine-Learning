@@ -42,19 +42,15 @@ class NN():
         self.input_weights = define_input_weights(input_width, width, initial_w)
         self.depth = depth
         self.width = width
+        self.loss = []
+        self.errors = []
+        
+    def update_NN_weights(self, delta_output_weights, delta_hidden_weights, delta_input_weights, learning_rate):
+        self.hidden_weights = self.hidden_weights - learning_rate * delta_hidden_weights 
+        self.output_weights = self.output_weights - learning_rate * delta_output_weights 
+        self.input_weights = self.input_weights - learning_rate * delta_input_weights 
 
-# x = NN(depth=3, width=2, initial_w="zeros")
-# print(x.output_weights)
-# print(x.hidden_weights)
-# print("\n")
-# x = NN(depth=3, width=2, initial_w="gaussian")
-# print(x.output_weights)
-# print(x.hidden_weights)
-# print("\n")
-# x = NN(depth=5, width=3, initial_w="zeros")
-# print(x.output_weights)
-# print(x.hidden_weights)
-# print("\n")
+
 
         
         
