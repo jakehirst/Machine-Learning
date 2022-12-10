@@ -4,7 +4,7 @@ from Backward_propagation import *
 import os
 import pandas as pd
 
-def SGD(network, epochs, df, gamma_0, d):
+def SGD(network, epochs, df, gamma_0, d, test_df):
     for epoch in range(epochs):
         learning_rate = gamma_0 / (1 + (gamma_0/d) * epoch)
         print("epoch = " + str(epoch))
@@ -25,9 +25,12 @@ def SGD(network, epochs, df, gamma_0, d):
             delta_output_weights, delta_hidden_weights, delta_input_weights = back_propogate(y, network, z_matrix, x, true_y=true_y)
             network.update_NN_weights(delta_output_weights, delta_hidden_weights, delta_input_weights, learning_rate)
         
+        
         error = get_error(df, network)
+        test_error = get_error(test_df, network)
         print(error)
         network.errors.append(error)
+        network.test_errors.append(test_error)
     return network
             
     

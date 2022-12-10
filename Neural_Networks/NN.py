@@ -44,6 +44,8 @@ class NN():
         self.width = width
         self.loss = []
         self.errors = []
+        self.test_errors = []
+
         
     def update_NN_weights(self, delta_output_weights, delta_hidden_weights, delta_input_weights, learning_rate):
         self.hidden_weights = self.hidden_weights - learning_rate * delta_hidden_weights 

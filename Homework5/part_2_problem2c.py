@@ -15,7 +15,7 @@ widths = [5, 10, 25, 50, 100]
 for width in widths:
     network = NN(depth=3, width=width, input_width=5, initial_w="zeros")
 
-    network = SGD(network, 10, df, gamma_0=0.02, d=0.07)
+    network = SGD(network, 10, df, 0.02, 0.07, test_df)
 
     number_of_updates = list(range(0, len(network.loss)))
     plt.plot(number_of_updates, network.loss, 'b') 
@@ -30,4 +30,11 @@ for width in widths:
     plt.ylabel("error")
     plt.title(f"error vs epochs, width = {width}")
     plt.savefig(f"/Users/jakehirst/Desktop/Machine_Learning/Homework5/edited_width_{width}_zeros_error.png")
+    plt.close()
+    
+    plt.plot(number_of_epochs, network.test_errors, 'r')
+    plt.xlabel("number of epochs")
+    plt.ylabel("test_error")
+    plt.title(f"testt_error vs epochs, width = {width}")
+    plt.savefig(f"/Users/jakehirst/Desktop/Machine_Learning/Homework5/edited_width_{width}_zeros_test_error.png")
     plt.close()
